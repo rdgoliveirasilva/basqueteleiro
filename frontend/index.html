@@ -1,0 +1,1442 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Basqueteleiro - Uma dose diária de basquete. NBA, NBB, Liga Ouro e LDB em um só lugar." />
+  <title>Basqueteleiro - Uma dose diária de basquete</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="./src/assets/logo.png" />
+
+  <style>
+    :root {
+      --verde-escuro:   #0B3D2E;
+      --verde-medio:    #114A38;
+      --verde-claro:    #1B5E48;
+      --verde-brilho:   #2E8B67;
+      --amarelo:        #F2C10E;
+      --amarelo-suave:  #FFD84D;
+      --laranja:        #F26B21;
+      --laranja-suave:  #FF8A4C;
+      --branco:         #FFFFFF;
+      --radius:         14px;
+      --radius-sm:      8px;
+      --maxw:           1180px;
+      --navbar-h:       68px;
+      --sombra-card:    0 10px 30px rgba(0,0,0,.35);
+      --font-body:      'Inter', system-ui, -apple-system, sans-serif;
+      --font-display:   'Anton', 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      background: var(--verde-escuro);
+      font-family: var(--font-body);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    body, body *, p, span, div, li, small, strong, em,
+    h1, h2, h3, h4, h5, h6, a, a:visited, a:active,
+    label, button, input, textarea, select,
+    i[class^="bi-"], i[class*=" bi-"] {
+      color: #FFFFFF !important;
+    }
+
+    a:hover, .nav-link-bl.ativo, .nav-link-bl:hover,
+    .radar-cabecalho__ver, .radar-cabecalho__ver:hover,
+    .noticias-cabecalho__ver, .noticias-cabecalho__ver:hover,
+    .radar-cabecalho__subtitulo, .noticia__fonte,
+    .chip--liga-nbb, .chip--liga-ouro,
+    .dropdown-bl__titulo, .dropdown-bl__divisao,
+    .dropdown-bl__menu a:hover, .dropdown-bl__time:hover {
+      color: var(--amarelo) !important;
+    }
+    .radar-post__status--aovivo, .chip--liga-nba, .noticia__etiqueta--nba {
+      color: var(--laranja-suave) !important;
+    }
+    .radar-post__status--encerrado, .chip--liga-ldb {
+      color: #7FD7B2 !important;
+    }
+    .noticia__etiqueta--nbb, .noticia__etiqueta--ouro { color: var(--verde-escuro) !important; }
+    .radar-cabecalho__icone--nbb, .radar-cabecalho__icone--ouro { color: var(--verde-escuro) !important; }
+    .radar-cabecalho__icone--ldb, .radar-cabecalho__icone--nba,
+    .noticia__etiqueta--ldb, .noticia__etiqueta--nba { color: var(--branco) !important; }
+    .btn-bl--primario, .btn-bl--primario:hover, .btn-bl--primario i,
+    .hero-caixa--esq .hero-caixa__link, .hero-caixa--esq .hero-caixa__link:hover,
+    .hero-caixa--esq .hero-caixa__link i { color: var(--verde-escuro) !important; }
+
+    h1, h2, h3 { font-family: var(--font-display); letter-spacing: .02em; }
+
+    /* NAVBAR */
+    .navbar-bl {
+      position: sticky; top: 0; z-index: 1000;
+      height: var(--navbar-h);
+      background: #0B3D2E; background: rgba(11,61,46,.92);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--verde-claro);
+    }
+    .navbar-bl .container-fluid { max-width: var(--maxw); height: 100%; padding: 0 24px; }
+    .navbar-brand-bl {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-display); font-size: 1.3rem;
+      letter-spacing: .04em; text-transform: uppercase; text-decoration: none;
+    }
+    .navbar-brand-bl svg { width: 32px; height: 32px; flex: none; }
+    .nav-item-bl { position: relative; }
+    .nav-link-bl {
+      font-weight: 600; padding: 8px 12px; border-radius: var(--radius-sm);
+      transition: background .2s; font-size: .95rem; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .nav-link-bl:hover, .nav-link-bl.ativo { background: var(--verde-medio); }
+    .nav-link-bl__caret { font-size: .7rem; transition: transform .2s; }
+    .nav-item-bl:hover .nav-link-bl__caret { transform: rotate(180deg); }
+
+    .dropdown-bl {
+      position: absolute; top: calc(100% + 8px); left: 0;
+      width: min(760px, calc(100vw - 40px));
+      background: #0F4433; border: 1px solid var(--verde-claro);
+      border-radius: var(--radius); box-shadow: 0 24px 60px rgba(0,0,0,.6);
+      padding: 20px; display: grid; grid-template-columns: 180px 1fr;
+      gap: 20px; opacity: 0; visibility: hidden; transform: translateY(-6px);
+      transition: opacity .18s, transform .18s, visibility .18s;
+      z-index: 1001;
+    }
+    .nav-item-bl:hover .dropdown-bl, .dropdown-bl:hover {
+      opacity: 1; visibility: visible; transform: translateY(0);
+    }
+    .nav-item-bl::after {
+      content: ''; position: absolute; left: 0; top: 100%;
+      width: 100%; height: 12px; pointer-events: auto;
+    }
+    .dropdown-bl__menu {
+      border-right: 1px solid rgba(255,255,255,.10);
+      padding-right: 16px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .dropdown-bl__menu a {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 6px; font-size: .88rem; font-weight: 600;
+      text-decoration: none; transition: background .15s;
+    }
+    .dropdown-bl__menu a:hover { background: rgba(242,193,14,.10); }
+    .dropdown-bl__menu a i { font-size: .95rem; opacity: .8; width: 16px; text-align: center; }
+    .dropdown-bl__times {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 4px 18px; max-height: 400px; overflow-y: auto;
+      overflow-x: hidden; min-width: 0;
+    }
+    .dropdown-bl__times::-webkit-scrollbar { width: 6px; }
+    .dropdown-bl__times::-webkit-scrollbar-thumb {
+      background: var(--verde-claro); border-radius: 3px;
+    }
+    .dropdown-bl__time {
+      display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+      border-radius: 6px; font-size: .84rem; font-weight: 500;
+      text-decoration: none; transition: background .12s;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+    }
+    .dropdown-bl__time:hover { background: rgba(255,255,255,.06); }
+    .dropdown-bl__time .escudo {
+      width: 22px; height: 22px; border-radius: 50%; flex: none;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: .62rem;
+      letter-spacing: .02em; background: rgba(255,255,255,.10);
+      color: var(--branco);
+    }
+    .dropdown-bl__time > span:last-child {
+      min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dropdown-bl__time--nbb  .escudo { background: rgba(242,193,14,.22); }
+    .dropdown-bl__time--ldb  .escudo { background: rgba(46,139,103,.28); }
+    .dropdown-bl__time--ouro .escudo { background: rgba(255,215,0,.28); }
+    .dropdown-bl__time--nba  .escudo { background: rgba(242,107,33,.22); }
+    .dropdown-bl__titulo {
+      font-family: var(--font-display); font-size: .72rem;
+      letter-spacing: .14em; text-transform: uppercase;
+      margin: 0 0 8px; grid-column: 1 / -1;
+    }
+    .dropdown-bl__divisao {
+      grid-column: 1 / -1; font-family: var(--font-display);
+      font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+      margin: 14px 0 6px; padding-bottom: 4px;
+      border-bottom: 1px solid rgba(242,193,14,.22);
+    }
+    .dropdown-bl__divisao:first-child { margin-top: 0; }
+
+    @media (max-width: 768px) {
+      .dropdown-bl {
+        position: static; width: 100%; grid-template-columns: 1fr;
+        opacity: 1; visibility: visible; transform: none;
+        box-shadow: none; border: none; background: transparent;
+        padding: 8px 0 8px 12px; display: none;
+      }
+      .dropdown-bl__menu { border-right: none; padding-right: 0; }
+      .dropdown-bl__times { grid-template-columns: 1fr 1fr; max-height: none; }
+      .nav-item-bl.is-open .dropdown-bl { display: grid; }
+    }
+
+    .btn-hamburguer {
+      background: transparent; border: 1px solid var(--verde-claro);
+      border-radius: var(--radius-sm); padding: 6px 10px;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative; width: 100%;
+      min-height: calc(100vh - var(--navbar-h));
+      min-height: calc(100dvh - var(--navbar-h));
+      background-image: url('./src/assets/hero-bg.png');
+      background-size: cover; background-position: center;
+      background-repeat: no-repeat; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at center, rgba(0,0,0,.35) 0%, rgba(0,0,0,.65) 70%),
+        linear-gradient(180deg, rgba(11,61,46,.35) 0%, rgba(11,61,46,.55) 100%);
+      z-index: 1; pointer-events: none;
+    }
+    .hero-conteudo {
+      position: relative; z-index: 2; width: 100%; max-width: 1400px;
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center; gap: 32px;
+    }
+    .hero-logo { display: flex; justify-content: center; align-items: center; padding: 16px; }
+    .hero-logo img {
+      width: clamp(240px, 30vw, 460px); height: auto; display: block;
+      filter: drop-shadow(0 12px 40px rgba(0,0,0,.65)) drop-shadow(0 0 30px rgba(242,193,14,.25));
+    }
+    .hero-caixa {
+      background: rgba(11,61,46,.75);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(242,193,14,.35); border-radius: var(--radius);
+      padding: 28px 26px; max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      position: relative; text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .hero-caixa--esq { justify-self: start; border-left: 4px solid var(--amarelo); }
+    .hero-caixa--dir { justify-self: end;   border-right: 4px solid var(--laranja); }
+    .hero-caixa__tag {
+      display: inline-block; font-size: .7rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(242,193,14,.15); border: 1px solid rgba(242,193,14,.35);
+      color: var(--amarelo) !important; margin-bottom: 14px;
+    }
+    .hero-caixa--dir .hero-caixa__tag {
+      background: rgba(242,107,33,.15); border-color: rgba(242,107,33,.35);
+      color: var(--laranja-suave) !important;
+    }
+    .hero-caixa__titulo {
+      font-family: var(--font-display); font-size: clamp(1.3rem, 2vw, 1.8rem);
+      line-height: 1.05; text-transform: uppercase;
+      margin: 0 0 12px; text-align: center;
+    }
+    .hero-caixa__texto {
+      font-size: .95rem; line-height: 1.55;
+      margin: 0 0 18px; text-align: center;
+    }
+    .hero-caixa__link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-weight: 700; font-size: .9rem; text-transform: uppercase;
+      letter-spacing: .04em; text-decoration: none;
+      padding: 8px 16px; border-radius: 999px;
+      background: var(--amarelo); transition: transform .15s, box-shadow .2s;
+    }
+    .hero-caixa__link:hover {
+      transform: translateY(-2px); box-shadow: 0 8px 20px rgba(242,193,14,.35);
+    }
+    .hero-caixa--dir .hero-caixa__link {
+      background: var(--laranja); color: var(--branco) !important;
+    }
+    .hero-caixa--dir .hero-caixa__link:hover {
+      background: var(--laranja-suave); color: var(--branco) !important;
+      box-shadow: 0 8px 20px rgba(242,107,33,.35);
+    }
+    @media (max-width: 1100px) {
+      .hero-conteudo { grid-template-columns: 1fr; gap: 24px; justify-items: center; }
+      .hero-logo { order: -1; }
+      .hero-caixa { max-width: 520px; justify-self: center !important; }
+    }
+
+    /* SEÇÕES */
+    .secao {
+      max-width: var(--maxw); margin: 0 auto;
+      padding: 72px 20px; position: relative;
+    }
+    .secao + .secao::before {
+      content: ''; position: absolute;
+      top: 0; left: 20px; right: 20px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--verde-claro), transparent);
+    }
+
+    /* NOTÍCIAS */
+    .noticias-cabecalho {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 10px 4px 14px;
+      border-bottom: 1px solid var(--verde-claro); margin-bottom: 24px;
+    }
+    .noticias-cabecalho__titulo {
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2vw, 1.5rem);
+      letter-spacing: .06em; text-transform: uppercase; margin: 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .noticias-cabecalho__ver {
+      font-size: .82rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; text-decoration: none; flex: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .noticia-principal {
+      display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px;
+      align-items: center; background: var(--verde-medio);
+      border: 1px solid var(--verde-claro); border-radius: var(--radius);
+      padding: 24px; margin-bottom: 28px; text-decoration: none;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .noticia-principal:hover {
+      transform: translateY(-2px);
+      border-color: var(--verde-brilho); box-shadow: var(--sombra-card);
+    }
+    .noticia-principal__imagem {
+      position: relative; width: 100%; aspect-ratio: 16 / 10;
+      border-radius: 10px; overflow: hidden;
+      background-size: cover; background-position: center;
+    }
+    .noticia-principal__imagem--nbb { background-color: #0E4232; }
+    .noticia-principal__imagem--ldb { background-color: #0A2F24; }
+    .noticia-principal__imagem--ouro { background-color: #0E4232; }
+    .noticia-principal__imagem--nba { background-color: #0A2F24; }
+    .noticia-principal__imagem--geral { background-color: #0A2F24; }
+    .noticia-principal__corpo { display: flex; flex-direction: column; gap: 12px; }
+    .noticia-principal__titulo {
+      font-family: var(--font-body); font-weight: 800;
+      font-size: clamp(1.3rem, 2.4vw, 1.8rem); line-height: 1.2;
+      margin: 0; letter-spacing: -.01em;
+    }
+    .noticia-principal__meta {
+      font-size: .78rem; display: flex; align-items: center;
+      gap: 6px; flex-wrap: wrap;
+    }
+    .noticia-principal__resumo { font-size: .95rem; line-height: 1.55; margin: 0; }
+    .noticias-grade {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+    }
+    @media (max-width: 900px) {
+      .noticia-principal { grid-template-columns: 1fr; }
+      .noticias-grade { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .noticias-grade { grid-template-columns: 1fr; }
+    }
+    .noticia-secundaria {
+      display: flex; flex-direction: column; gap: 12px;
+      text-decoration: none; transition: transform .2s;
+    }
+    .noticia-secundaria:hover { transform: translateY(-2px); }
+    .noticia-secundaria__imagem {
+      position: relative; width: 100%; aspect-ratio: 16 / 10;
+      border-radius: 10px; overflow: hidden;
+      background-size: cover; background-position: center;
+    }
+    .noticia-secundaria__imagem--nbb { background-color: #0E4232; }
+    .noticia-secundaria__imagem--ldb { background-color: #0A2F24; }
+    .noticia-secundaria__imagem--ouro { background-color: #0E4232; }
+    .noticia-secundaria__imagem--nba { background-color: #0A2F24; }
+    .noticia-secundaria__imagem--geral { background-color: #0A2F24; }
+    .noticia-secundaria__titulo {
+      font-family: var(--font-body); font-weight: 700;
+      font-size: 1.05rem; line-height: 1.32; margin: 0;
+    }
+    .noticia-secundaria__meta {
+      font-size: .76rem; display: flex; align-items: center;
+      gap: 6px; flex-wrap: wrap;
+    }
+    .noticia__etiqueta {
+      position: absolute; top: 10px; left: 10px;
+      font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 4px 9px;
+      border-radius: 4px; z-index: 2;
+    }
+    .noticia__etiqueta--nbb  { background: var(--amarelo); }
+    .noticia__etiqueta--ldb  { background: var(--verde-brilho); }
+    .noticia__etiqueta--ouro { background: #D4AF37; }
+    .noticia__etiqueta--nba  { background: var(--laranja); }
+    .noticia__etiqueta--geral { background: var(--verde-medio); border: 1px solid var(--verde-claro); }
+
+    .chips {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+      padding-top: 10px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .74rem; font-weight: 600; padding: 4px 9px;
+      border-radius: 999px; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .chip i { font-size: .8rem; }
+    .chip--liga-nbb  { background: rgba(242,193,14,.18); border-color: rgba(242,193,14,.35); }
+    .chip--liga-ldb  { background: rgba(46,139,103,.20); border-color: rgba(46,139,103,.40); }
+    .chip--liga-ouro { background: rgba(212,175,55,.18); border-color: rgba(212,175,55,.40); }
+    .chip--liga-nba  { background: rgba(242,107,33,.18); border-color: rgba(242,107,33,.38); }
+    .chip--liga-geral { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
+
+    /* RADAR */
+    .radar-cabecalho {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 12px 18px; border-radius: var(--radius-sm);
+      border: 1px solid var(--verde-claro);
+      background: linear-gradient(180deg, var(--verde-medio), #0E4232);
+      margin-bottom: 20px;
+    }
+    .radar-cabecalho__esq { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .radar-cabecalho__icone {
+      width: 48px; height: 48px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1.15rem;
+      letter-spacing: .02em; flex: none;
+    }
+    .radar-cabecalho__icone--nbb  { background: var(--amarelo); }
+    .radar-cabecalho__icone--ldb  { background: var(--verde-brilho); }
+    .radar-cabecalho__icone--ouro { background: #D4AF37; }
+    .radar-cabecalho__icone--nba  { background: var(--laranja); }
+    .radar-cabecalho__titulo {
+      font-family: var(--font-display);
+      font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+      letter-spacing: .06em; text-transform: uppercase; margin: 0;
+      line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .radar-cabecalho__subtitulo {
+      display: block; font-family: var(--font-body);
+      font-size: .72rem; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; margin-top: 2px;
+    }
+    .radar-cabecalho__ver {
+      font-size: .82rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; text-decoration: none; flex: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .radar-grade { display: grid; gap: 18px; margin-bottom: 16px; }
+    .radar-grade--3 { grid-template-columns: repeat(3, 1fr); }
+    .radar-grade--2 { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 992px) {
+      .radar-grade--3 { grid-template-columns: repeat(2, 1fr); }
+      .radar-grade--2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .radar-grade--3 { grid-template-columns: 1fr; }
+    }
+
+    .radar-post {
+      display: flex; flex-direction: column;
+      background: var(--verde-medio);
+      border: 1px solid var(--verde-claro);
+      border-radius: var(--radius); overflow: hidden;
+      text-decoration: none;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .radar-post:hover {
+      transform: translateY(-2px); border-color: var(--verde-brilho);
+      box-shadow: var(--sombra-card);
+    }
+    .radar-post__imagem {
+      position: relative; aspect-ratio: 16 / 9; width: 100%; overflow: hidden;
+    }
+    .radar-post__imagem--nbb  { background: linear-gradient(135deg, #8a6b00, #0E4232); }
+    .radar-post__imagem--ldb  { background: linear-gradient(135deg, #1B5E48, #0A2F24); }
+    .radar-post__imagem--ouro { background: linear-gradient(135deg, #8a6b00, #0E4232); }
+    .radar-post__imagem--nba  { background: linear-gradient(135deg, #A83F0E, #0A2F24); }
+    .radar-post__imagem {
+      background-size: cover; background-position: center;
+    }
+    .radar-post__imagem::after {
+      content: attr(data-sigla);
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: .05em;
+      color: rgba(255,255,255,.22);
+      pointer-events: none;
+    }
+    .radar-post__imagem[style]::after { display: none; }
+    .radar-post__etiqueta {
+      position: absolute; top: 10px; left: 10px;
+      font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 4px 8px;
+      border-radius: 4px; z-index: 2;
+    }
+    .radar-post__etiqueta--nbb  { background: var(--amarelo); color: var(--verde-escuro) !important; }
+    .radar-post__etiqueta--ldb  { background: var(--verde-brilho); }
+    .radar-post__etiqueta--ouro { background: #D4AF37; color: var(--verde-escuro) !important; }
+    .radar-post__etiqueta--nba  { background: var(--laranja); }
+    .radar-post__status {
+      position: absolute; top: 10px; right: 10px;
+      font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 4px 8px;
+      border-radius: 999px; backdrop-filter: blur(6px); z-index: 2;
+    }
+    .radar-post__status--agendado  { background: rgba(0,0,0,.55); }
+    .radar-post__status--aovivo    { background: rgba(242,107,33,.85); color: var(--branco) !important; }
+    .radar-post__status--encerrado { background: rgba(46,139,103,.85); }
+    .radar-post__status--adiado    { background: rgba(0,0,0,.55); }
+
+    .radar-post__corpo {
+      padding: 14px 16px 16px;
+      display: flex; flex-direction: column; gap: 8px; flex: 1;
+    }
+    .radar-post__categoria {
+      font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--amarelo) !important;
+    }
+    .radar-post__titulo {
+      font-family: var(--font-body); font-weight: 700;
+      font-size: 1.02rem; line-height: 1.32; margin: 0;
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .radar-post__meta {
+      font-size: .78rem; display: flex; align-items: center;
+      gap: 6px; flex-wrap: wrap; margin-top: auto;
+    }
+
+    .radar-mini {
+      display: grid; grid-template-columns: 1fr 140px; gap: 16px;
+      background: var(--verde-medio); border: 1px solid var(--verde-claro);
+      border-radius: var(--radius); padding: 16px 18px; text-decoration: none;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      align-items: start;
+    }
+    .radar-mini:hover {
+      transform: translateY(-2px); border-color: var(--verde-brilho);
+      box-shadow: var(--sombra-card);
+    }
+    .radar-mini__corpo {
+      display: flex; flex-direction: column; gap: 8px; min-width: 0;
+    }
+    .radar-mini__etiqueta {
+      font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 8px;
+      border-radius: 4px; background: rgba(255,255,255,.10);
+      width: fit-content;
+    }
+    .radar-mini__titulo {
+      font-family: var(--font-body); font-weight: 700;
+      font-size: 1rem; line-height: 1.32; margin: 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .radar-mini__meta {
+      font-size: .76rem; display: flex; align-items: center;
+      gap: 6px; flex-wrap: wrap;
+    }
+    .radar-mini__thumb {
+      width: 140px; aspect-ratio: 16 / 10; border-radius: 8px;
+      position: relative; overflow: hidden; flex: none;
+      background-size: cover; background-position: center;
+    }
+    .radar-mini__thumb--nbb  { background: linear-gradient(135deg, #8a6b00, #0E4232); }
+    .radar-mini__thumb--ldb  { background: linear-gradient(135deg, #1B5E48, #0A2F24); }
+    .radar-mini__thumb--ouro { background: linear-gradient(135deg, #8a6b00, #0E4232); }
+    .radar-mini__thumb--nba  { background: linear-gradient(135deg, #A83F0E, #0A2F24); }
+    .radar-mini__thumb::after {
+      content: attr(data-sigla);
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1.4rem;
+      letter-spacing: .04em; color: rgba(255,255,255,.35);
+    }
+    .radar-mini__thumb[style]::after { display: none; }
+    @media (max-width: 640px) {
+      .radar-mini { grid-template-columns: 1fr; }
+      .radar-mini__thumb { width: 100%; aspect-ratio: 16/9; }
+    }
+
+    .aviso-mock {
+      font-size: .72rem; text-align: left;
+      margin-top: 12px; font-style: italic;
+    }
+
+    /* FOOTER */
+    .footer-bl {
+      border-top: 1px solid var(--verde-claro);
+      padding: 32px 20px; text-align: center; font-size: .85rem;
+    }
+    .footer-bl p { margin: 0 0 6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar-bl">
+  <div class="container-fluid d-flex align-items-center justify-content-between">
+    <div class="d-none d-md-flex align-items-center gap-1">
+      <a href="#noticias" class="nav-link-bl">Notícias</a>
+
+      <div class="nav-item-bl" data-liga="nbb">
+        <a href="#nbb" class="nav-link-bl">NBB <i class="bi bi-chevron-down nav-link-bl__caret"></i></a>
+        <div class="dropdown-bl">
+          <div class="dropdown-bl__menu">
+            <a href="#nbb"><i class="bi bi-people-fill"></i> Times</a>
+            <a href="#noticias"><i class="bi bi-newspaper"></i> Notícias</a>
+            <a href="#nbb"><i class="bi bi-person-badge"></i> Jogadores</a>
+          </div>
+          <div>
+            <p class="dropdown-bl__titulo">Times do NBB</p>
+            <div class="dropdown-bl__times" data-lista-times="nbb"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item-bl" data-liga="ouro">
+        <a href="#ouro" class="nav-link-bl">Ouro <i class="bi bi-chevron-down nav-link-bl__caret"></i></a>
+        <div class="dropdown-bl">
+          <div class="dropdown-bl__menu">
+            <a href="#ouro"><i class="bi bi-people-fill"></i> Times</a>
+            <a href="#noticias"><i class="bi bi-newspaper"></i> Notícias</a>
+            <a href="#ouro"><i class="bi bi-person-badge"></i> Jogadores</a>
+          </div>
+          <div>
+            <p class="dropdown-bl__titulo">Times da Liga Ouro</p>
+            <div class="dropdown-bl__times" data-lista-times="ouro"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item-bl" data-liga="ldb">
+        <a href="#ldb" class="nav-link-bl">LDB <i class="bi bi-chevron-down nav-link-bl__caret"></i></a>
+        <div class="dropdown-bl">
+          <div class="dropdown-bl__menu">
+            <a href="#ldb"><i class="bi bi-people-fill"></i> Times</a>
+            <a href="#noticias"><i class="bi bi-newspaper"></i> Notícias</a>
+            <a href="#ldb"><i class="bi bi-person-badge"></i> Jogadores</a>
+          </div>
+          <div>
+            <p class="dropdown-bl__titulo">Times da LDB</p>
+            <div class="dropdown-bl__times" data-lista-times="ldb"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item-bl" data-liga="nba">
+        <a href="#nba" class="nav-link-bl">NBA <i class="bi bi-chevron-down nav-link-bl__caret"></i></a>
+        <div class="dropdown-bl">
+          <div class="dropdown-bl__menu">
+            <a href="#nba"><i class="bi bi-people-fill"></i> Times</a>
+            <a href="#noticias"><i class="bi bi-newspaper"></i> Notícias</a>
+            <a href="#nba"><i class="bi bi-person-badge"></i> Jogadores</a>
+          </div>
+          <div>
+            <p class="dropdown-bl__titulo">Times da NBA</p>
+            <div class="dropdown-bl__times" data-lista-times="nba"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a class="navbar-brand-bl" href="#top">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" fill="#0B3D2E" stroke="#F2C10E" stroke-width="3"/>
+        <path d="M32 6 v52 M6 32 h52" stroke="#FFFFFF" stroke-width="2" opacity=".7"/>
+        <path d="M10 12 c14 10 14 30 0 40 M54 12 c-14 10 -14 30 0 40" fill="none" stroke="#F2C10E" stroke-width="2" opacity=".7"/>
+      </svg>
+      Basqueteleiro
+    </a>
+
+    <button class="d-md-none btn-hamburguer" type="button"
+            data-bs-toggle="collapse" data-bs-target="#menuMobile"
+            aria-label="Abrir menu">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+  </div>
+
+  <div class="collapse d-md-none" id="menuMobile"
+       style="background: #0B3D2E; border-bottom: 1px solid var(--verde-claro);">
+    <div class="p-3 d-flex flex-column gap-1">
+      <a href="#noticias" class="nav-link-bl">Notícias</a>
+      <a href="#nbb"      class="nav-link-bl">NBB</a>
+      <a href="#ouro"     class="nav-link-bl">Liga Ouro</a>
+      <a href="#ldb"      class="nav-link-bl">LDB</a>
+      <a href="#nba"      class="nav-link-bl">NBA</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-conteudo">
+    <aside class="hero-caixa hero-caixa--esq">
+      <span class="hero-caixa__tag">Bem-vindo</span>
+      <h2 class="hero-caixa__titulo">Uma dose<br>diária de basquete</h2>
+      <p class="hero-caixa__texto">
+        Notícias, resultados e informações atualizadas para você viver o
+        basquete 24 horas por dia.
+      </p>
+      <a href="#noticias" class="hero-caixa__link">Ver notícias <i class="bi bi-arrow-right"></i></a>
+    </aside>
+
+    <div class="hero-logo">
+      <img src="./src/assets/logo.png" alt="Logo Basqueteleiro" />
+    </div>
+
+    <aside class="hero-caixa hero-caixa--dir">
+      <span class="hero-caixa__tag">Seu basquete sempre em dia</span>
+      <h2 class="hero-caixa__titulo">O jogo<br>não para</h2>
+      <p class="hero-caixa__texto">
+        Coloque no seu radar tudo o que acontece no basquete brasileiro,
+        24 horas por dia! Não sabe como funciona? Clique abaixo.
+      </p>
+      <a href="#nbb" class="hero-caixa__link">Radar diário <i class="bi bi-lightning-charge-fill"></i></a>
+    </aside>
+  </div>
+</header>
+
+<!-- NOTÍCIAS DO DIA (Google News — query "basquete") -->
+<section class="secao" id="noticias">
+  <div class="noticias-cabecalho">
+    <h2 class="noticias-cabecalho__titulo">
+      <i class="bi bi-newspaper"></i> Últimas notícias
+    </h2>
+    <a href="#noticias" class="noticias-cabecalho__ver">Ver tudo <i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div id="noticia-principal"></div>
+  <div class="noticias-grade" id="noticias-secundarias"></div>
+</section>
+
+<!-- RADAR DIÁRIO — NBB (LNB + Google News "nbb") -->
+<section class="secao" id="nbb">
+  <div class="radar-cabecalho">
+    <div class="radar-cabecalho__esq">
+      <div class="radar-cabecalho__icone radar-cabecalho__icone--nbb">NBB</div>
+      <h2 class="radar-cabecalho__titulo">
+        Radar diário
+        <span class="radar-cabecalho__subtitulo">Novo Basquete Brasil</span>
+      </h2>
+    </div>
+    <a href="#nbb" class="radar-cabecalho__ver">Ver tudo <i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="radar-grade radar-grade--3" id="radar-nbb-destaque"></div>
+  <div class="radar-grade radar-grade--2" id="radar-nbb-secundario"></div>
+  <p class="aviso-mock">✓ dados reais (LNB + Google News)</p>
+</section>
+
+<!-- RADAR DIÁRIO — LIGA OURO (mockado) -->
+<section class="secao" id="ouro">
+  <div class="radar-cabecalho">
+    <div class="radar-cabecalho__esq">
+      <div class="radar-cabecalho__icone radar-cabecalho__icone--ouro">OURO</div>
+      <h2 class="radar-cabecalho__titulo">
+        Radar diário
+        <span class="radar-cabecalho__subtitulo">Liga Ouro</span>
+      </h2>
+    </div>
+    <a href="#ouro" class="radar-cabecalho__ver">Ver tudo <i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="radar-grade radar-grade--3" id="radar-ouro-destaque"></div>
+  <div class="radar-grade radar-grade--2" id="radar-ouro-secundario"></div>
+  <p class="aviso-mock">✓ dados reais via LNB</p>
+</section>
+
+<!-- RADAR DIÁRIO — LDB (mockado) -->
+<section class="secao" id="ldb">
+  <div class="radar-cabecalho">
+    <div class="radar-cabecalho__esq">
+      <div class="radar-cabecalho__icone radar-cabecalho__icone--ldb">LDB</div>
+      <h2 class="radar-cabecalho__titulo">
+        Radar diário
+        <span class="radar-cabecalho__subtitulo">Liga de Desenvolvimento</span>
+      </h2>
+    </div>
+    <a href="#ldb" class="radar-cabecalho__ver">Ver tudo <i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="radar-grade radar-grade--3" id="radar-ldb-destaque"></div>
+  <div class="radar-grade radar-grade--2" id="radar-ldb-secundario"></div>
+  <p class="aviso-mock">✓ dados reais via LDB</p>
+</section>
+
+<!-- RADAR DIÁRIO — NBA (mockado) -->
+<section class="secao" id="nba">
+  <div class="radar-cabecalho">
+    <div class="radar-cabecalho__esq">
+      <div class="radar-cabecalho__icone radar-cabecalho__icone--nba">NBA</div>
+      <h2 class="radar-cabecalho__titulo">
+        Radar diário
+        <span class="radar-cabecalho__subtitulo">National Basketball Association</span>
+      </h2>
+    </div>
+    <a href="#nba" class="radar-cabecalho__ver">Ver tudo <i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="radar-grade radar-grade--3" id="radar-nba-destaque"></div>
+  <div class="radar-grade radar-grade--2" id="radar-nba-secundario"></div>
+  <p class="aviso-mock">✓ dados reais via Google News</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer-bl">
+  <p><strong>Basqueteleiro</strong> — dados de fontes públicas, sem vínculo oficial com NBA, LNB, Liga Ouro ou clubes.</p>
+  <p>Feito com 🏀 no Brasil · <a href="#top">Voltar ao topo</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+  /* ==================================================================
+     Motion One
+     ================================================================== */
+  let animate = null, inView = null, stagger = null;
+  try {
+    const mod = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm');
+    animate = mod.animate;
+    inView  = mod.inView;
+    stagger = mod.stagger;
+  } catch (err) {
+    console.warn('[basqueteleiro] Motion One não carregou — animações desligadas.', err);
+  }
+
+  /* ==================================================================
+     API
+     ================================================================== */
+  const API_BASE = "http://127.0.0.1:8000";
+
+  /* ---------- Radar NBB (LNB + Google News "nbb") ---------- */
+  async function buscarNoticiasNBB(limite = 5) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/nbb/noticias?limite=${limite}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const dados = await resp.json();
+      if (!dados.noticias) throw new Error("API sem campo 'noticias'");
+      return dados.noticias.map(adaptarNoticiaRadar);
+    } catch (err) {
+      console.warn("[basqueteleiro] falha ao buscar notícias do NBB:", err);
+      return [];
+    }
+  }
+
+  /* ---------- Radar Liga Ouro (LNB direto) ---------- */
+  async function buscarNoticiasOuro(limite = 5) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/ouro/noticias?limite=${limite}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const dados = await resp.json();
+      if (!dados.noticias) throw new Error("API sem campo 'noticias'");
+      return dados.noticias.map(adaptarNoticiaRadar);
+    } catch (err) {
+      console.warn("[basqueteleiro] falha ao buscar notícias da Liga Ouro:", err);
+      return [];
+    }
+  }
+
+  /* ---------- Radar LDB (LNB + Google News "LDB basquete") ---------- */
+  async function buscarNoticiasLDB(limite = 5) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/ldb/noticias?limite=${limite}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const dados = await resp.json();
+      if (!dados.noticias) throw new Error("API sem campo 'noticias'");
+      return dados.noticias.map(adaptarNoticiaRadar);
+    } catch (err) {
+      console.warn("[basqueteleiro] falha ao buscar notícias da LDB:", err);
+      return [];
+    }
+  }
+
+  /* ---------- Radar NBA (Google News "NBA basquete") ---------- */
+  async function buscarNoticiasNBA(limite = 5) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/nba/noticias?limite=${limite}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const dados = await resp.json();
+      if (!dados.noticias) throw new Error("API sem campo 'noticias'");
+      return dados.noticias.map(adaptarNoticiaRadar);
+    } catch (err) {
+      console.warn("[basqueteleiro] falha ao buscar notícias da NBA:", err);
+      return [];
+    }
+  }
+
+  /* ---------- Últimas notícias (Google News "basquete") ---------- */
+  const NOTICIAS_FALLBACK = [
+    {
+      principal: true,
+      liga: "geral",
+      titulo: "Não foi possível carregar as notícias agora",
+      resumo: "Tente recarregar a página em alguns instantes.",
+      data: "—",
+      fonte: "Basqueteleiro",
+      url: "#noticias",
+    },
+  ];
+
+  async function buscarNoticiasAgregado(limite = 4) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/noticias?limite=${limite}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const dados = await resp.json();
+      if (!dados.noticias || !dados.noticias.length) {
+        throw new Error("Lista vazia");
+      }
+      return dados.noticias.map((n, i) => ({
+        principal: i === 0,
+        liga: n.liga || "geral",
+        titulo: n.titulo,
+        resumo: n.resumo || null,
+        data: n.data_texto || "—",
+        fonte: n.categoria || "Google News",
+        url: n.url || "#noticias",
+      }));
+    } catch (err) {
+      console.warn("[basqueteleiro] falha ao buscar notícias agregadas:", err);
+      return NOTICIAS_FALLBACK;
+    }
+  }
+
+  function adaptarNoticiaRadar(n) {
+    return {
+      liga: n.liga || "nbb",
+      titulo: n.titulo,
+      resumo: n.resumo || null,
+      data: n.data_texto || "—",
+      fonte: n.categoria || "LNB",
+      url: n.url || "#nbb",
+      imagem_url: n.imagem_url || null,
+    };
+  }
+
+
+  /* ==================================================================
+     TIMES POR LIGA (dropdown)
+     ================================================================== */
+  const TIMES_POR_LIGA = {
+    nbb: [
+      "Basket Osasco", "Basquete Cearense", "Bauru Basket", "Botafogo",
+      "Caixa/Brasília Basquete", "Caxias do Sul Basquete", "Corinthians",
+      "Itatiaiuçu Cruzeiro Basquete", "Flamengo", "Sesi Franca", "Minas Storm",
+      "Mogi Basquete", "Pato Basquete", "Paulistano", "Pinheiros",
+      "São José Basketball", "CEISC/União Corinthians", "Unifacisa",
+    ],
+    ouro: [
+      "Unoesc Basket Joaçaba", "Betim América Towers", "Brusque Basquete",
+      "Grupo BT/Clube de Ca...", "Fluminense", "IVV/CETAF",
+    ],
+    ldb: [
+      "Basket Osasco", "B. Cearense/Minás", "Bauru Basket/LSB", "Botafogo",
+      "Caixa Brasília Basquete", "Campo Mourão", "Caxias", "Corinthians",
+      "Cruzeiro", "Flamengo", "Fluminense", "Instituto Viva Vida", "Minas",
+      "Mogi", "Pato Basquete", "Paulistano", "Pinheiros", "Rio Claro Basquete",
+      "São José Basketball", "Sesi Franca", "Thalia/PH.D Esportes",
+      "União Corinthians", "Unifacisa", "Vasco/Tijuca",
+    ],
+    nba: {
+      divisoes: [
+        { nome: "Atlântico", times: ["Boston Celtics", "Brooklyn Nets", "New York Knicks", "Philadelphia 76ers", "Toronto Raptors"] },
+        { nome: "Central",   times: ["Chicago Bulls", "Cleveland Cavaliers", "Detroit Pistons", "Indiana Pacers", "Milwaukee Bucks"] },
+        { nome: "Sudeste",   times: ["Atlanta Hawks", "Charlotte Hornets", "Miami Heat", "Orlando Magic", "Washington Wizards"] },
+        { nome: "Noroeste",  times: ["Denver Nuggets", "Minnesota Timberwolves", "Oklahoma City Thunder", "Portland Trail Blazers", "Utah Jazz"] },
+        { nome: "Pacífico",  times: ["Golden State Warriors", "LA Clippers", "Los Angeles Lakers", "Phoenix Suns", "Sacramento Kings"] },
+        { nome: "Sudoeste",  times: ["Dallas Mavericks", "Houston Rockets", "Memphis Grizzlies", "New Orleans Pelicans", "San Antonio Spurs"] },
+      ],
+    },
+  };
+
+  /* ==================================================================
+     HELPERS
+     ================================================================== */
+  function el(tag, props = {}, ...filhos) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') node.className = v;
+      else node.setAttribute(k, v === true ? '' : v);
+    }
+    for (const f of filhos.flat()) {
+      if (f == null || f === false) continue;
+      node.append(f);
+    }
+    return node;
+  }
+
+  const STATUS_META = {
+    agendado:  { label: "Agendado",  cls: "agendado"  },
+    aovivo:    { label: "Ao vivo",   cls: "aovivo"    },
+    encerrado: { label: "Encerrado", cls: "encerrado" },
+    adiado:    { label: "Adiado",    cls: "adiado"    },
+  };
+
+  const SIGLA_LIGA = { nbb: "NBB", ouro: "OURO", ldb: "LDB", nba: "NBA", geral: "BR" };
+
+  function abreviar(nome) {
+    const limpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9 ]/g, " ");
+    const partes = limpo.split(/\s+/).filter(Boolean);
+    if (partes.length === 1) return partes[0].slice(0, 3).toUpperCase();
+    const ignorar = new Set(["BASQUETE", "BASKET", "STORM", "CLUB", "CLUBE"]);
+    const significativas = partes.filter(p => !ignorar.has(p.toUpperCase()));
+    if (significativas.length >= 2) {
+      return (significativas[0][0] + significativas[1][0] + (significativas[1][1] || "")).toUpperCase();
+    }
+    return significativas[0].slice(0, 3).toUpperCase();
+  }
+
+  /* ==================================================================
+     RENDER — dropdown de times
+     ================================================================== */
+  function criarItemTime(nome, liga) {
+    return el('a',
+      { class: `dropdown-bl__time dropdown-bl__time--${liga}`, href: `#${liga}`, title: nome },
+      el('span', { class: 'escudo' }, abreviar(nome)),
+      el('span', {}, nome),
+    );
+  }
+
+  function renderTimesDropdown() {
+    for (const liga of ['nbb', 'ouro', 'ldb', 'nba']) {
+      const box = document.querySelector(`[data-lista-times="${liga}"]`);
+      if (!box) continue;
+      const dados = TIMES_POR_LIGA[liga];
+      if (!dados) continue;
+
+      if (Array.isArray(dados)) {
+        box.replaceChildren(...dados.map(nome => criarItemTime(nome, liga)));
+        continue;
+      }
+      if (dados.divisoes) {
+        const fragmentos = [];
+        for (const div of dados.divisoes) {
+          fragmentos.push(el('div', { class: 'dropdown-bl__divisao' }, div.nome));
+          for (const nome of div.times) fragmentos.push(criarItemTime(nome, liga));
+        }
+        box.replaceChildren(...fragmentos);
+      }
+    }
+  }
+
+  /* ==================================================================
+     RENDER — NOTÍCIAS
+     ================================================================== */
+  function renderNoticiaPrincipal(n) {
+    return el('a',
+      { class: 'noticia-principal', href: n.url || '#noticias', target: '_blank', rel: 'noopener' },
+      el('div', { class: `noticia-principal__imagem noticia-principal__imagem--${n.liga}` },
+        el('span', { class: `noticia__etiqueta noticia__etiqueta--${n.liga}` },
+          SIGLA_LIGA[n.liga] || n.liga.toUpperCase()),
+      ),
+      el('div', { class: 'noticia-principal__corpo' },
+        el('h3', { class: 'noticia-principal__titulo' }, n.titulo),
+        el('div', { class: 'noticia-principal__meta' },
+          el('i', { class: 'bi bi-clock' }), n.data,
+          el('span', {}, ' · '),
+          el('span', {}, n.fonte),
+        ),
+        n.resumo ? el('p', { class: 'noticia-principal__resumo' }, n.resumo) : null,
+        el('div', { class: 'chips' },
+          el('span', { class: 'chip' }, el('i', { class: 'bi bi-chat' }), 'Comentários'),
+          el('span', { class: `chip chip--liga-${n.liga}` }, SIGLA_LIGA[n.liga] || n.liga.toUpperCase()),
+        ),
+      ),
+    );
+  }
+
+  function renderNoticiaSecundaria(n) {
+    return el('a',
+      { class: 'noticia-secundaria', href: n.url || '#noticias', target: '_blank', rel: 'noopener' },
+      el('div', { class: `noticia-secundaria__imagem noticia-secundaria__imagem--${n.liga}` },
+        el('span', { class: `noticia__etiqueta noticia__etiqueta--${n.liga}` },
+          SIGLA_LIGA[n.liga] || n.liga.toUpperCase()),
+      ),
+      el('h3', { class: 'noticia-secundaria__titulo' }, n.titulo),
+      el('div', { class: 'noticia-secundaria__meta' },
+        el('i', { class: 'bi bi-clock' }), n.data,
+        el('span', {}, ' · '),
+        el('span', {}, n.fonte),
+      ),
+      el('div', { class: 'chips' },
+        el('span', { class: 'chip' }, el('i', { class: 'bi bi-chat' }), 'Comentários'),
+        el('span', { class: `chip chip--liga-${n.liga}` }, SIGLA_LIGA[n.liga] || n.liga.toUpperCase()),
+      ),
+    );
+  }
+
+  /* ==================================================================
+     RENDER — RADAR DE NOTÍCIAS
+     ================================================================== */
+  function renderRadarPostNoticia(n, liga) {
+    const estiloImagem = n.imagem_url
+      ? { style: `background-image: url('${n.imagem_url}');` }
+      : {};
+
+    return el('a',
+      { class: 'radar-post', href: n.url || `#${liga}`, 'data-liga': liga,
+        target: '_blank', rel: 'noopener' },
+
+      el('div', {
+        class: `radar-post__imagem radar-post__imagem--${liga}`,
+        'data-sigla': SIGLA_LIGA[liga] || liga.toUpperCase(),
+        ...estiloImagem,
+      },
+        el('span', { class: `radar-post__etiqueta radar-post__etiqueta--${liga}` },
+          SIGLA_LIGA[liga] || liga.toUpperCase()),
+      ),
+
+      el('div', { class: 'radar-post__corpo' },
+        n.fonte ? el('span', { class: 'radar-post__categoria' }, n.fonte) : null,
+        el('h3', { class: 'radar-post__titulo' }, n.titulo),
+        el('div', { class: 'radar-post__meta' },
+          el('i', { class: 'bi bi-clock' }), n.data,
+        ),
+      ),
+    );
+  }
+
+  function renderRadarMiniNoticia(n, liga) {
+    const estiloImagem = n.imagem_url
+      ? { style: `background-image: url('${n.imagem_url}');` }
+      : {};
+
+    return el('a',
+      { class: 'radar-mini', href: n.url || `#${liga}`, 'data-liga': liga,
+        target: '_blank', rel: 'noopener' },
+
+      el('div', { class: 'radar-mini__corpo' },
+        el('span', { class: 'radar-mini__etiqueta' }, SIGLA_LIGA[liga] || liga.toUpperCase()),
+        el('h3', { class: 'radar-mini__titulo' }, n.titulo),
+        el('div', { class: 'radar-mini__meta' },
+          el('i', { class: 'bi bi-clock' }), n.data,
+          el('span', {}, ' · '),
+          el('span', {}, n.fonte || ''),
+        ),
+      ),
+
+      el('div', {
+        class: `radar-mini__thumb radar-mini__thumb--${liga}`,
+        'data-sigla': SIGLA_LIGA[liga] || liga.toUpperCase(),
+        ...estiloImagem,
+      }),
+    );
+  }
+
+  /* ==================================================================
+     RENDER — RADAR DE JOGOS (mockado)
+     ================================================================== */
+  function renderRadarPostJogo(jogo, liga) {
+    const meta = STATUS_META[jogo.status] || STATUS_META.agendado;
+    const sigla = SIGLA_LIGA[liga];
+
+    const linhaTime = (t, papel) => {
+      const vencedor = jogo.vencedor === papel;
+      return el('div',
+        { class: 'radar-post__time' + (vencedor ? ' vencedor' : '') },
+        el('span', { class: 'sigla' }, t.sigla),
+        el('span', { class: 'nome'  }, t.nome),
+      );
+    };
+
+    return el('a',
+      { class: 'radar-post', href: `#${liga}`, 'data-liga': liga },
+      el('div', {
+        class: `radar-post__imagem radar-post__imagem--${liga}`,
+        'data-sigla': `${jogo.time_casa.sigla} × ${jogo.time_fora.sigla}`,
+      },
+        el('span', { class: `radar-post__etiqueta radar-post__etiqueta--${liga}` }, sigla),
+        el('span', { class: `radar-post__status radar-post__status--${meta.cls}` }, meta.label),
+      ),
+      el('div', { class: 'radar-post__corpo' },
+        el('div', { class: 'radar-post__times' },
+          linhaTime(jogo.time_casa, 'casa'),
+          linhaTime(jogo.time_fora, 'fora'),
+        ),
+        el('h3', { class: 'radar-post__titulo' },
+          `${jogo.time_casa.nome} × ${jogo.time_fora.nome}`),
+        el('div', { class: 'radar-post__meta' },
+          el('i', { class: 'bi bi-clock' }), jogo.horario,
+          el('span', {}, ' · '),
+          el('i', { class: 'bi bi-geo-alt' }), jogo.local,
+        ),
+        el('div', { class: 'chips' },
+          el('span', { class: 'chip' }, el('i', { class: 'bi bi-chat' }), 'Comentários'),
+          el('span', { class: `chip chip--liga-${liga}` }, sigla),
+        ),
+      ),
+    );
+  }
+
+  function renderRadarMiniJogo(jogo, liga) {
+    const meta = STATUS_META[jogo.status] || STATUS_META.agendado;
+    const sigla = SIGLA_LIGA[liga];
+
+    return el('a',
+      { class: 'radar-mini', href: `#${liga}`, 'data-liga': liga },
+      el('div', { class: 'radar-mini__corpo' },
+        el('span', { class: 'radar-mini__etiqueta' }, sigla),
+        el('h3', { class: 'radar-mini__titulo' },
+          `${jogo.time_casa.nome} × ${jogo.time_fora.nome} — ${meta.label}`),
+        el('div', { class: 'radar-mini__meta' },
+          el('i', { class: 'bi bi-clock' }), jogo.horario,
+          el('span', {}, ' · '),
+          el('i', { class: 'bi bi-geo-alt' }), jogo.local,
+        ),
+      ),
+      el('div', {
+        class: `radar-mini__thumb radar-mini__thumb--${liga}`,
+        'data-sigla': `${jogo.time_casa.sigla}×${jogo.time_fora.sigla}`,
+      }),
+    );
+  }
+
+  /* ==================================================================
+     ORQUESTRAÇÃO
+     ================================================================== */
+  async function renderNoticias() {
+    const noticias = await buscarNoticiasAgregado(4);
+    const principal = noticias.find(n => n.principal) || noticias[0];
+    const secundarias = noticias.filter(n => n !== principal).slice(0, 3);
+
+    const boxPrincipal = document.getElementById('noticia-principal');
+    if (boxPrincipal) boxPrincipal.replaceChildren(renderNoticiaPrincipal(principal));
+
+    const boxSec = document.getElementById('noticias-secundarias');
+    if (boxSec) boxSec.replaceChildren(...secundarias.map(renderNoticiaSecundaria));
+  }
+
+  async function renderRadarNBA() {
+    const noticias = await buscarNoticiasNBA(5);
+
+    const boxDestaque = document.getElementById('radar-nba-destaque');
+    const boxMini = document.getElementById('radar-nba-secundario');
+
+    if (!noticias.length) {
+      if (boxDestaque) {
+        boxDestaque.replaceChildren(
+          el('p', { class: 'aviso-mock' }, 'Não foi possível carregar as notícias da NBA.')
+        );
+      }
+      if (boxMini) boxMini.remove();
+      return;
+    }
+
+    const destaque = noticias.slice(0, 3);
+    const mini = noticias.slice(3, 5);
+
+    if (boxDestaque) {
+      boxDestaque.replaceChildren(...destaque.map(n => renderRadarPostNoticia(n, 'nba')));
+    }
+    if (boxMini) {
+      if (mini.length) {
+        boxMini.replaceChildren(...mini.map(n => renderRadarMiniNoticia(n, 'nba')));
+      } else {
+        boxMini.remove();
+      }
+    }
+  }
+
+  async function renderRadarNBB() {
+    const noticias = await buscarNoticiasNBB(5);
+
+    const boxDestaque = document.getElementById('radar-nbb-destaque');
+    const boxMini = document.getElementById('radar-nbb-secundario');
+
+    if (!noticias.length) {
+      if (boxDestaque) {
+        boxDestaque.replaceChildren(
+          el('p', { class: 'aviso-mock' }, 'Não foi possível carregar as notícias do NBB.')
+        );
+      }
+      if (boxMini) boxMini.remove();
+      return;
+    }
+
+    const destaque = noticias.slice(0, 3);
+    const mini = noticias.slice(3, 5);
+
+    if (boxDestaque) {
+      boxDestaque.replaceChildren(...destaque.map(n => renderRadarPostNoticia(n, 'nbb')));
+    }
+    if (boxMini) {
+      if (mini.length) {
+        boxMini.replaceChildren(...mini.map(n => renderRadarMiniNoticia(n, 'nbb')));
+      } else {
+        boxMini.remove();
+      }
+    }
+  }
+
+  async function renderRadarLDB() {
+    const noticias = await buscarNoticiasLDB(5);
+
+    const boxDestaque = document.getElementById('radar-ldb-destaque');
+    const boxMini = document.getElementById('radar-ldb-secundario');
+
+    if (!noticias.length) {
+      if (boxDestaque) {
+        boxDestaque.replaceChildren(
+          el('p', { class: 'aviso-mock' }, 'Não foi possível carregar as notícias da LDB.')
+        );
+      }
+      if (boxMini) boxMini.remove();
+      return;
+    }
+
+    const destaque = noticias.slice(0, 3);
+    const mini = noticias.slice(3, 5);
+
+    if (boxDestaque) {
+      boxDestaque.replaceChildren(...destaque.map(n => renderRadarPostNoticia(n, 'ldb')));
+    }
+    if (boxMini) {
+      if (mini.length) {
+        boxMini.replaceChildren(...mini.map(n => renderRadarMiniNoticia(n, 'ldb')));
+      } else {
+        boxMini.remove();
+      }
+    }
+  }
+
+  async function renderRadarOuro() {
+    const noticias = await buscarNoticiasOuro(5);
+
+    const boxDestaque = document.getElementById('radar-ouro-destaque');
+    const boxMini = document.getElementById('radar-ouro-secundario');
+
+    if (!noticias.length) {
+      if (boxDestaque) {
+        boxDestaque.replaceChildren(
+          el('p', { class: 'aviso-mock' }, 'Não foi possível carregar as notícias da Liga Ouro.')
+        );
+      }
+      if (boxMini) boxMini.remove();
+      return;
+    }
+
+    const destaque = noticias.slice(0, 3);
+    const mini = noticias.slice(3, 5);
+
+    if (boxDestaque) {
+      boxDestaque.replaceChildren(...destaque.map(n => renderRadarPostNoticia(n, 'ouro')));
+    }
+    if (boxMini) {
+      if (mini.length) {
+        boxMini.replaceChildren(...mini.map(n => renderRadarMiniNoticia(n, 'ouro')));
+      } else {
+        boxMini.remove();
+      }
+    }
+  }
+
+  function renderRadaresMock() {
+    for (const liga of ['nba']) {
+      const jogos = RADAR_MOCK[liga] || [];
+      const destaque = jogos.slice(0, 3);
+      const mini = jogos.slice(3, 5);
+
+      const boxDestaque = document.getElementById(`radar-${liga}-destaque`);
+      if (boxDestaque) {
+        boxDestaque.replaceChildren(...destaque.map(j => renderRadarPostJogo(j, liga)));
+      }
+      const boxMini = document.getElementById(`radar-${liga}-secundario`);
+      if (boxMini) {
+        if (mini.length) {
+          boxMini.replaceChildren(...mini.map(j => renderRadarMiniJogo(j, liga)));
+        } else {
+          boxMini.remove();
+        }
+      }
+    }
+  }
+
+  async function renderTudo() {
+    await renderNoticias();   // Últimas Notícias (Google News "basquete")
+    await renderRadarNBB();   // Radar NBB (LNB + Google News "nbb")
+    await renderRadarOuro();  // Radar Liga Ouro (só LNB)
+    await renderRadarLDB();   // Radar LDB (LNB + Google News "LDB basquete")
+    await renderRadarNBA();   // Radar NBA (só Google News "NBA basquete")
+  }
+
+  /* ==================================================================
+     ANIMAÇÕES
+     ================================================================== */
+  function animarHeroi() {
+    if (!animate) return;
+    animate('.hero-logo', { opacity: [0, 1], scale: [0.55, 1], rotate: [-6, 0] },
+      { duration: 0.9, delay: 0.15, easing: [0.34, 1.56, 0.64, 1] });
+    animate('.hero-logo', { y: [0, -8, 0] },
+      { duration: 4, delay: 1.1, repeat: Infinity, easing: 'ease-in-out' });
+    animate('.hero-caixa--esq', { opacity: [0, 1], x: [-40, 0] },
+      { duration: 0.7, delay: 0.55, easing: [0.22, 1, 0.36, 1] });
+    animate('.hero-caixa--dir', { opacity: [0, 1], x: [40, 0] },
+      { duration: 0.7, delay: 0.65, easing: [0.22, 1, 0.36, 1] });
+  }
+
+  function animarSecoes() {
+    if (!animate || !inView || !stagger) return;
+    document.querySelectorAll('.secao').forEach(secao => {
+      const alvos = secao.querySelectorAll(
+        '.noticia-principal, .noticia-secundaria, .radar-post, .radar-mini'
+      );
+      if (!alvos.length) return;
+      inView(secao, () => {
+        animate(alvos, { opacity: [0, 1], y: [24, 0] }, {
+          duration: 0.6, delay: stagger(0.08), easing: [0.22, 1, 0.36, 1],
+        });
+      }, { amount: 0.15 });
+    });
+  }
+
+  /* ==================================================================
+     BOOT
+     ================================================================== */
+  const links = document.querySelectorAll('.nav-link-bl');
+  const marcar = () => {
+    const h = location.hash || '#top';
+    links.forEach(a => a.classList.toggle('ativo', a.getAttribute('href') === h));
+  };
+  window.addEventListener('hashchange', marcar);
+  marcar();
+
+  document.querySelectorAll('#menuMobile a').forEach(a =>
+    a.addEventListener('click', () => {
+      const menu = document.getElementById('menuMobile');
+      if (window.bootstrap) bootstrap.Collapse.getOrCreateInstance(menu).hide();
+    })
+  );
+
+  document.querySelectorAll('.nav-item-bl > .nav-link-bl').forEach(link => {
+    link.addEventListener('click', (e) => {
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        const item = link.closest('.nav-item-bl');
+        if (item.classList.contains('is-open')) return;
+        e.preventDefault();
+        document.querySelectorAll('.nav-item-bl.is-open').forEach(i => i.classList.remove('is-open'));
+        item.classList.add('is-open');
+      }
+    });
+  });
+
+  await renderTudo();
+  renderTimesDropdown();
+
+  try {
+    animarHeroi();
+    animarSecoes();
+  } catch (err) {
+    console.warn('[basqueteleiro] erro nas animações:', err);
+    document.querySelectorAll('.noticia-principal, .noticia-secundaria, .radar-post, .radar-mini, .hero-logo, .hero-caixa')
+      .forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
+  }
+</script>
+
+</body>
+</html>
