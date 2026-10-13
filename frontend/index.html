@@ -1358,11 +1358,13 @@
   }
 
   async function renderTudo() {
-    await renderNoticias();   // Últimas Notícias (Google News "basquete")
-    await renderRadarNBB();   // Radar NBB (LNB + Google News "nbb")
-    await renderRadarOuro();  // Radar Liga Ouro (só LNB)
-    await renderRadarLDB();   // Radar LDB (LNB + Google News "LDB basquete")
-    await renderRadarNBA();   // Radar NBA (só Google News "NBA basquete")
+    await Promise.all([
+      renderNoticias(),   // Últimas Notícias
+      renderRadarNBB(),   // Radar NBB (LNB + Google News "nbb")
+      renderRadarOuro(),  // Radar Liga Ouro (LNB)
+      renderRadarLDB(),   // Radar LDB (LNB + Google News "LDB basquete")
+      renderRadarNBA(),   // Radar NBA (só Google News "NBA basquete")
+    ]);
   }
 
   /* ==================================================================

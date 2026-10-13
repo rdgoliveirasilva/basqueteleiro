@@ -1,17 +1,7 @@
 """Serviço de notícias: funde fontes, deduplica, ordena.
 
-Duas funções públicas:
-- `ultimas_noticias(lnb, google, liga, limite)` — Radar NBB (LNB + Google News).
-- `ultimas_noticias_google(google, query, liga, limite)` — Agregado geral
-  (só Google News, query livre tipo 'basquete').
-
-Regra de deduplicação:
-1. Normalizar o título (minúsculas, sem acentos, sem pontuação).
-2. Pegar os primeiros 60 caracteres como "impressão digital".
-3. Se duas notícias compartilham a impressão, mantém a de MAIOR prioridade.
-4. Prioridade: LNB > Google News.
-
-Ordenação: por `publicado_em` desc (mais recentes primeiro).
+Radar NBB agora funde 3 fontes (LNB + GE + Surto Olímpico), todas com
+imagem real. Google News foi removido — não trazia imagem e era lento.
 """
 
 import logging
@@ -20,8 +10,9 @@ import unicodedata
 from datetime import datetime, timezone
 
 from app.models import League, ListaNoticias, Noticia
-from app.sources.google_news.client import GoogleNewsClient
+from app.sources.ge.client import GEClient
 from app.sources.lnb.client import LNBClient
+from app.sources.surto_olimpico.client import SurtoOlimpicoClient
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +45,7 @@ def _ordenar_por_data(noticias: list[Noticia]) -> list[Noticia]:
 
 
 def _deduplicar(listas_em_ordem: list[list[Noticia]]) -> list[Noticia]:
+    """Funde listas preservando prioridade (primeira lista vence)."""
     vistas: dict[str, Noticia] = {}
     for lista in listas_em_ordem:
         for n in lista:
@@ -63,35 +55,35 @@ def _deduplicar(listas_em_ordem: list[list[Noticia]]) -> list[Noticia]:
     return list(vistas.values())
 
 
-def ultimas_noticias(
-    lnb: LNBClient,
-    google: GoogleNewsClient,
-    liga: League,
-    limite: int = 4,
-) -> ListaNoticias:
-    """Funde LNB + Google News, deduplica, ordena e corta.
+def _buscar_fonte(nome: str, fn, erros: list[str]) -> list[Noticia]:
+    """Wrapper que captura exceções e anota o erro."""
+    try:
+        return fn()
+    except Exception as e:
+        log.warning("Falha %s: %s", nome, e)
+        erros.append(f"{nome}: {e}")
+        return []
 
-    Notícias da LNB vêm com imagem (scraper direto do HTML).
-    Notícias do Google News vêm sem imagem — o frontend mostra um placeholder
-    colorido com a sigla da liga.
+
+def ultimas_noticias_nbb(
+    lnb: LNBClient,
+    ge: GEClient,
+    surto: SurtoOlimpicoClient,
+    liga: League = League.NBB,
+    limite: int = 5,
+) -> ListaNoticias:
+    """Radar NBB: funde LNB + GE + Surto Olímpico.
+
+    Prioridade em caso de duplicata: LNB > GE > Surto.
     """
-    noticias_lnb: list[Noticia] = []
-    noticias_google: list[Noticia] = []
     erros: list[str] = []
 
-    try:
-        noticias_lnb = lnb.noticias(liga)
-    except Exception as e:
-        log.warning("Falha ao buscar notícias da LNB: %s", e)
-        erros.append(f"lnb: {e}")
+    # Prioridade: LNB (oficial) > GE (grande cobertura) > Surto (cobertura de nicho)
+    noticias_lnb = _buscar_fonte("lnb", lambda: lnb.noticias(liga), erros)
+    noticias_ge = _buscar_fonte("ge", lambda: ge.nbb(liga), erros)
+    noticias_surto = _buscar_fonte("surto", lambda: surto.buscar(liga), erros)
 
-    try:
-        noticias_google = google.buscar("nbb", liga)
-    except Exception as e:
-        log.warning("Falha ao buscar notícias do Google News: %s", e)
-        erros.append(f"google_news: {e}")
-
-    fundidas = _deduplicar([noticias_lnb, noticias_google])
+    fundidas = _deduplicar([noticias_lnb, noticias_ge, noticias_surto])
     ordenadas = _ordenar_por_data(fundidas)
     recorte = ordenadas[:limite]
 
@@ -99,17 +91,43 @@ def ultimas_noticias(
     return ListaNoticias(liga=liga, noticias=recorte, erro=erro_final)
 
 
+def ultimas_noticias_ldb(
+    lnb: LNBClient,
+    limite: int = 5,
+) -> ListaNoticias:
+    """Radar LDB: só LNB (por enquanto)."""
+    try:
+        noticias = lnb.noticias(League.LDB)
+    except Exception as e:
+        log.warning("Falha LNB (LDB): %s", e)
+        return ListaNoticias(liga=League.LDB, noticias=[], erro=f"lnb: {e}")
+
+    ordenadas = _ordenar_por_data(noticias)
+    return ListaNoticias(liga=League.LDB, noticias=ordenadas[:limite])
+
+
+def ultimas_noticias_ouro(
+    lnb: LNBClient,
+    limite: int = 5,
+) -> ListaNoticias:
+    """Radar Liga Ouro: só LNB."""
+    try:
+        noticias = lnb.noticias(League.OURO)
+    except Exception as e:
+        log.warning("Falha LNB (Ouro): %s", e)
+        return ListaNoticias(liga=League.OURO, noticias=[], erro=f"lnb: {e}")
+
+    ordenadas = _ordenar_por_data(noticias)
+    return ListaNoticias(liga=League.OURO, noticias=ordenadas[:limite])
+
+
 def ultimas_noticias_google(
-    google: GoogleNewsClient,
+    google,
     query: str,
     liga: League = League.GERAL,
     limite: int = 5,
 ) -> ListaNoticias:
-    """Busca notícias do Google News por query livre.
-
-    Usado pelo agregado geral da seção "Últimas Notícias" (ex: query='basquete').
-    Ordena por data desc e corta no limite.
-    """
+    """Mantido para /api/noticias e /api/nba (NBA ainda usa Google News)."""
     try:
         noticias = google.buscar(query, liga)
     except Exception as e:
@@ -118,55 +136,3 @@ def ultimas_noticias_google(
 
     ordenadas = _ordenar_por_data(noticias)
     return ListaNoticias(liga=liga, noticias=ordenadas[:limite])
-
-def ultimas_noticias_lnb(
-    lnb: LNBClient,
-    liga: League,
-    limite: int = 5,
-) -> ListaNoticias:
-    """Busca notícias só da LNB (scraping direto). Sem Google News.
-
-    Usado por ligas que ainda não têm cobertura boa no Google News
-    (ex: Liga Ouro).
-    """
-    try:
-        noticias = lnb.noticias(liga)
-    except Exception as e:
-        log.warning("Falha LNB (%s): %s", liga.value, e)
-        return ListaNoticias(liga=liga, noticias=[], erro=f"lnb: {e}")
-
-    ordenadas = _ordenar_por_data(noticias)
-    return ListaNoticias(liga=liga, noticias=ordenadas[:limite])
-
-def ultimas_noticias_ldb(
-    lnb: LNBClient,
-    google: GoogleNewsClient,
-    liga: League = League.LDB,
-    limite: int = 5,
-) -> ListaNoticias:
-    """Funde LNB (categoria LDB) + Google News (query 'LDB basquete').
-
-    Mesma lógica do NBB: dedup com LNB vencendo.
-    """
-    noticias_lnb: list[Noticia] = []
-    noticias_google: list[Noticia] = []
-    erros: list[str] = []
-
-    try:
-        noticias_lnb = lnb.noticias(liga)
-    except Exception as e:
-        log.warning("Falha LNB (%s): %s", liga.value, e)
-        erros.append(f"lnb: {e}")
-
-    try:
-        noticias_google = google.buscar("LDB basquete", liga)
-    except Exception as e:
-        log.warning("Falha Google News (LDB): %s", e)
-        erros.append(f"google_news: {e}")
-
-    fundidas = _deduplicar([noticias_lnb, noticias_google])
-    ordenadas = _ordenar_por_data(fundidas)
-    recorte = ordenadas[:limite]
-
-    erro_final = "; ".join(erros) if (erros and not recorte) else None
-    return ListaNoticias(liga=liga, noticias=recorte, erro=erro_final)
